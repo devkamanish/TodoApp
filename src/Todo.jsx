@@ -17,13 +17,30 @@ const Todo = () => {
 
   const [inputData, setinputData] = useState("")
   const [items, setitems] = useState(getLocalItems())
+  const [toggleSubmit, settoggleSubmit] = useState(true)
+  const [isEditItem, setisEditItem] = useState(null)
 
 
   const addItems =()=>{
     if(!inputData){
-
-    }else{
-      setitems([...items ,inputData])
+      alert("please add something")
+    }else if(inputData && !toggleSubmit){
+      setitems(
+        items.map((elem)=>{
+          if(elem.id === isEditItem){
+            return{...elem,name:inputData}
+          }
+          return elem;
+        })
+      )
+      settoggleSubmit(true)
+      setinputData('')
+      setisEditItem(null)
+    }
+    else{
+      const allInputData= {id:new Date().getTime().toString(),name:inputData}
+      console.log(allInputData)
+      setitems([...items ,allInputData])
       setinputData("")
     }
    
@@ -35,13 +52,22 @@ const Todo = () => {
     }
   }
 
-  const deleteItem =(id)=>{
-    console.log(id)
-    const updatedItems = items.filter((elem,ind)=>{
-      return ind!=id;
+  const deleteItem =(ind)=>{
+    const updatedItems = items.filter((elem)=>{
+      return ind!=elem.id;
     })
 
     setitems(updatedItems)
+  }
+
+  const editItem =(id)=>{
+    let newEditItem = items.find((elem)=>{
+      return elem.id == id
+    })
+    console.log(newEditItem)
+    settoggleSubmit(false)
+    setinputData(newEditItem.name)
+    setisEditItem(id)
   }
 
   const removeAll = ()=>{
@@ -67,7 +93,10 @@ const Todo = () => {
         onChange={(e)=>setinputData(e.target.value)}
         onKeyPress={handleKeyPress}
         />
-        <i className=" fa fa-plus add-btn" title='Add Item' onClick={addItems}></i>  
+        {
+          toggleSubmit ?<i className=" fa fa-plus add-btn" title='Add Item' onClick={addItems}></i> :
+          <i className='far fa-edit add-btn' title='Update Item' onClick={()=>addItems}></i>
+        }
          </div>
 
          <div className="showItems">
@@ -76,10 +105,13 @@ const Todo = () => {
             items.map((elem ,ind)=>{
               return(
                   
-                <div className="eachItem" key={ind}>
-                <h3>{elem}</h3>
-                <i className='far fa-trash-alt add-btn' title='Delete Item' onClick={()=>deleteItem(ind)}></i>
+                <div className="eachItem" key={elem.id}>
+                <h3>{elem.name}</h3>
+                <div className="todo-btn">
+                    <i className='far fa-edit add-btn' title='Edit Item' onClick={()=>editItem(elem.id)}></i>
+                    <i className='far fa-trash-alt add-btn' title='Delete Item' onClick={()=>deleteItem(elem.id)}></i>
                 </div>
+                 </div>
               )
             })
           }
